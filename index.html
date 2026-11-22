@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>С днём рождения!</title>
+<script src="https://cdn.jsdelivr.net/npm/function-plot@1.24.4/dist/function-plot.js"></script>
+<style>
+  body { font-family: sans-serif; text-align: center; background:#fff5f8; margin:0; padding:20px; overflow-x: hidden; }
+  h1 { color:#e91e63; font-size: 22px; margin-bottom: 10px; }
+  input { width:45px; padding:5px; margin:2px; border-radius:6px; border:1px solid #e91e63; text-align: center; font-size: 16px; font-weight: bold; color: #333; outline: none;}
+  input:focus { border-color: #ff1493; box-shadow: 0 0 5px rgba(233,30,99,0.5); }
+  
+  .plot-container { position: relative; width: 100%; max-width: 600px; margin: 10px auto; }
+  #plot { width:100%; height: 400px; }
+  
+  /* Сердечко */
+  .heart-overlay {
+    position: absolute;
+    top: 51%; 
+    left: 51%;
+    transform: translate(-50%, -50%);
+    font-size: 100px; /* Сделал побольше */
+    color: rgba(233, 30, 99, 0.2); /* Чуть ярче */
+    pointer-events: none; 
+    animation: pulse 1.5s infinite;
+    /* Плавное движение при изменении координат */
+    transition: top 0.3s ease, left 0.3s ease; 
+  }
+
+  @keyframes pulse {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.15); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+  }
+
+  .hint { color:#888; font-size: 14px; margin-top: 10px; }
+</style>
+</head>
+<body>
+  <h1>С днём рождения! 💖</h1>
+  <div>
+    Двигай сердечко: 
+    X = <input id="x" type="number" value="0"> 
+    Y = <input id="y" type="number" value="0">
+  </div>
+  
+  <div class="plot-container">
+    <div id="plot"></div>
+    <div id="heart" class="heart-overlay">❤️</div>
+  </div>
+  
+  <p class="hint">Попробуй поставить X = 2, Y = 3 😉</p>
+  
+  <script>
+    // Инициализируем пустой график (только сетка и оси)
+    functionPlot({
+      target: '#plot',
+      width: document.getElementById('plot').clientWidth,
+      height: 400,
+      grid: true,
+      xAxis: { domain: [-8, 8] },
+      yAxis: { domain: [-8, 8] },
+      data: [] // Пустой массив - никаких линий
+    });
+
+    const inputX = document.getElementById('x');
+    const inputY = document.getElementById('y');
+    const heart = document.getElementById('heart');
+
+    function moveHeart() {
+      // Получаем значения (если пусто - 0)
+      let x = parseFloat(inputX.value) || 0;
+      let y = parseFloat(inputY.value) || 0;
+
+      // Ограничиваем, чтобы не улетело за график
+      x = Math.max(-7, Math.min(7, x));
+      y = Math.max(-7, Math.min(7, y));
+
+      // Пересчитываем проценты для CSS.
+      // Ось X от -8 до 8 (всего 16 единиц). 1 единица = 6.25%
+      // Ось Y от -8 до 8 (снизу вверх)
+      // 51% - это примерно центр (0,0) с учетом отступов самой библиотеки.
+      
+      // Сдвиг по X: (x * 6.15) % 
+      // Сдвиг по Y: (y * -6.15) % (минус, потому что в CSS верх - это 0)
+      
+      const leftPercent = 51 + (x * 6.15);
+      const topPercent = 51 - (y * 6.15);
+
+      heart.style.left = leftPercent + '%';
+      heart.style.top = topPercent + '%';
+    }
+
+    // Привязываем событие ввода
+    inputX.addEventListener('input', moveHeart);
+    inputY.addEventListener('input', moveHeart);
+
+    // Перерисовка при повороте экрана
+    window.addEventListener('resize', () => {
+      functionPlot({
+        target: '#plot',
+        width: document.getElementById('plot').clientWidth,
+        height: 400,
+        grid: true,
+        xAxis: { domain: [-8, 8] },
+        yAxis: { domain: [-8, 8] },
+        data: []
+      });
+      moveHeart();
+    });
+  </script>
+</body>
+</html>
